@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { registerUserUseCase } from '@/use-cases/users';
 import { z } from 'zod';
 
 const signupSchema = z.object({
@@ -33,5 +34,16 @@ export async function signup(
     };
   }
 
-  return {}
+  try {
+    const user = await registerUserUseCase(
+      parsed.data.email,
+      parsed.data.password
+    );
+
+    return {};
+  } catch (error) {
+    return {
+      formError: (error as Error).message,
+    };
+  }
 }

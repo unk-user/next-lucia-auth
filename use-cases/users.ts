@@ -1,14 +1,23 @@
 import { createAccount } from '@/data-access/accounts';
 import { createEmailVerificationToken } from '@/data-access/email-verification';
 import { createUser, getUserByEmail } from '@/data-access/users';
+import { sendVerificationEmail } from '@/emails/verification-email';
 
 export async function registerUserUseCase(email: string, password: string) {
   const existingUser = await getUserByEmail(email);
-  if (existingUser) {
-    return { error: 'User already exists' };
+  if(!existingUser) {
+    const user = await createUser(email);
+    await 
   }
-  const user = await createUser(email);
-  await createAccount(user.id, password);
+  
+  if (existingUser && existingUser.emailVerified) {
+    throw new Error('User already exists and is verified');
+  }
+  
 
-  const emailVerification = await createEmailVerificationToken(user.id);
+
+  const user = await createUser(email);
+  const account = await createAccount(user.id, password);
+
+  return { id: user.id };
 }
