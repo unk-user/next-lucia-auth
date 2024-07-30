@@ -1,10 +1,11 @@
-import { Lucia, TimeSpan } from 'lucia';
+import { cookies } from 'next/headers';
+import { cache } from 'react';
 
+import { Lucia, TimeSpan } from 'lucia';
 import { PrismaAdapter } from '@lucia-auth/adapter-prisma';
 import prisma from './lib/db';
 import { User, Session } from '@prisma/client';
-import { cookies } from 'next/headers';
-import { cache } from 'react';
+import { GitHub } from 'arctic';
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
@@ -24,6 +25,11 @@ export const lucia = new Lucia(adapter, {
     };
   },
 });
+
+export const github = new GitHub(
+  process.env.GITHUB_CLIENT_ID!,
+  process.env.GITHUB_CLIENT_SECRET!
+);
 
 export const uncachedValidateRequest = async (): Promise<
   { user: User; session: Session } | { user: null; session: null }

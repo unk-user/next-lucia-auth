@@ -28,7 +28,7 @@ model Account {
   id          String      @id @default(cuid())
   userId      String      @unique
   accountType accountType
-  githubId    String?     @unique
+  githubId    Int?     @unique
   password    String?
   salt        String?
 
@@ -48,7 +48,7 @@ model EmailVerification {
   token          String   @unique
   tokenExpiresAt DateTime
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, tokenExpiresAt])
   @@map("email_verifications")
