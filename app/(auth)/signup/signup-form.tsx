@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { useFormState } from 'react-dom';
 import { signup } from './action';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { GitHubLogoIcon } from '@radix-ui/react-icons';
 
 export function SignupForm() {
   const [state, formAction] = useFormState(signup, { success: false });
@@ -26,8 +28,19 @@ export function SignupForm() {
             <CardTitle>Sign up</CardTitle>
             <CardDescription>Create a new account</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form action={formAction} className="space-y-4">
+          <form action={formAction}>
+            <CardContent className="space-y-1">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                asChild
+              >
+                <Link href="api/login/github" prefetch={false}>
+                  <GitHubLogoIcon className="mr-2 h-5 w-5" />
+                  Log in with Github
+                </Link>
+              </Button>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -62,11 +75,13 @@ export function SignupForm() {
                   {state?.formError}
                 </p>
               ) : null}
+            </CardContent>
+            <CardFooter className="mt-2">
               <SubmitButton className="w-full" aria-label="submit-btn">
                 Sign up
               </SubmitButton>
-            </form>
-          </CardContent>
+            </CardFooter>
+          </form>
         </Card>
       ) : (
         <Card className="w-full max-w-lg">
@@ -74,7 +89,7 @@ export function SignupForm() {
             <CardTitle>You're almost there!</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription className='text-base'>
+            <CardDescription className="text-base">
               Please check your email at {state?.email} and click the
               verification link to complete your registration.
             </CardDescription>
