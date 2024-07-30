@@ -1,9 +1,9 @@
 import prisma from '@/lib/db';
-import { generateIdFromEntropySize } from 'lucia';
+import jwt from 'jsonwebtoken';
 import { TimeSpan, createDate } from 'oslo';
 
-export async function createEmailVerificationToken(userId: string) {
-  const token = generateIdFromEntropySize(25);
+export async function createEmailVerification(userId: string) {
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET!);
   return await prisma.emailVerification.create({
     data: {
       userId,
@@ -13,18 +13,38 @@ export async function createEmailVerificationToken(userId: string) {
   });
 }
 
-export async function getEmailVErificationByToken(userId: string) {
-  return await prisma.emailVerification.findFirst({
+export async function getLastEmailVerifications(
+  userId: string,
+  hours: number = 2
+) {
+  return await prisma.emailVerification.findMany({
+    where: {
+      userId,
+      tokenExpiresAt: {
+        gte: new Date(new Date().getTime() - hours * 60 * 60 * 1000),
+      },
+    },
+    orderBy: {
+      tokenExpiresAt: 'desc',
+    },
+  });
+}
+
+export async function deleteEmailVerifications(userId: string) {
+  await prisma.emailVerification.deleteMany({
     where: {
       userId,
     },
   });
 }
 
-export async function deleteVerifyEmailToken(id: string) {
-  await prisma.emailVerification.delete({
+export async function deleteExpiredEmailVerifications(userId: string) {
+  await prisma.emailVerification.deleteMany({
     where: {
-      id,
+      userId,
+      tokenExpiresAt: {
+        lt: new Date(),
+      },
     },
   });
 }
