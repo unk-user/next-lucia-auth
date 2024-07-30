@@ -7,7 +7,10 @@ export default function VerificationEmail({ token }: { token: string }) {
     <Html>
       <Text>this is your token: {token}</Text>
       <Button
-        href=""
+        href={
+          (process.env.DOMAIN_NAME || 'localhost:3000') +
+          `api/verify-email?token=${token}`
+        }
         style={{
           backgroundColor: 'black',
           padding: '10px',
@@ -21,10 +24,8 @@ export default function VerificationEmail({ token }: { token: string }) {
   );
 }
 
-export async function sendVerificationEmail(
-  to: string,
-  subject: string,
-  token: string
-) {
-  await sendEmail(to, subject, <VerificationEmail token={token} />);
+export function sendVerificationEmail(to: string, token: string) {
+  sendEmail(to, 'Email verification', <VerificationEmail token={token} />)
+    .then((res) => console.log('email sent :', res))
+    .catch((err) => console.log(err));
 }
