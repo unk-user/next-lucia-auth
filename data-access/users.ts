@@ -14,6 +14,9 @@ export async function getUserByEmail(email: string) {
     where: {
       email,
     },
+    include: {
+      Account: true,
+    },
   });
 }
 
@@ -35,6 +38,17 @@ export async function updateUser(id: string, data: Partial<User>) {
       id,
     },
     data,
+  });
+}
+
+export async function verifyUser(id: string) {
+  return await prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      emailVerified: true,
+    },
   });
 }
 

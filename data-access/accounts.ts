@@ -1,7 +1,7 @@
 import prisma from '@/lib/db';
 import crypto from 'crypto';
 
-async function hashPassword(plainTextPassword: string, salt: string) {
+export async function hashPassword(plainTextPassword: string, salt: string) {
   return new Promise<string>((resolve, reject) => {
     crypto.pbkdf2(
       plainTextPassword,
@@ -41,7 +41,7 @@ export async function createAccountViaGithub(userId: string, githubId: string) {
 }
 
 export async function getAccountByUserId(userId: string) {
-  return await prisma.account.findFirst({
+  return await prisma.account.findUnique({
     where: {
       userId,
     },
@@ -49,9 +49,23 @@ export async function getAccountByUserId(userId: string) {
 }
 
 export async function getAccountByGithubId(githubId: string) {
-  return await prisma.account.findFirst({
+  return await prisma.account.findUnique({
     where: {
       githubId,
+    },
+  });
+}
+
+export async function updatePassword(userId: string, password: string) {
+  const salt = crypto.randomBytes(128).toString('base64');
+  const hash = await hashPassword(password, salt);
+  return await prisma.account.update({
+    where: {
+      userId,
+    },
+    data: {
+      password: hash,
+      salt,
     },
   });
 }
