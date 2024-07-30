@@ -1,9 +1,12 @@
 'use server';
 
-import { registerUserUseCase } from '@/use-cases/users';
 import { z } from 'zod';
+import { ActionResponse } from '../signup/action';
+import { loginUserUseCase } from '@/use-cases/users';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-const signupSchema = z.object({
+const signinSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
   password: z
     .string()
@@ -11,20 +14,13 @@ const signupSchema = z.object({
     .max(255),
 });
 
-export interface ActionResponse<T> {
-  fieldError?: Partial<Record<keyof T, string | undefined>>;
-  formError?: string | null;
-  success?: boolean;
-  email?: string;
-}
-
-export async function signup(
+export async function signin(
   _: any,
   formData: FormData
-): Promise<ActionResponse<z.infer<typeof signupSchema>>> {
+): Promise<ActionResponse<z.infer<typeof signinSchema>>> {
   const obj = Object.fromEntries(formData.entries());
 
-  const parsed = signupSchema.safeParse(obj);
+  const parsed = signinSchema.safeParse(obj);
   if (!parsed.success) {
     const err = parsed.error.flatten();
     return {
@@ -36,18 +32,22 @@ export async function signup(
   }
 
   try {
-    const { user } = await registerUserUseCase(
+    const sessionCookie = await loginUserUseCase(
       parsed.data.email,
       parsed.data.password
     );
 
-    return {
-      success: true,
-      email: user.email,
-    };
+    cookies().set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes
+    );
+    redirect('/dashboard')
   } catch (error) {
     return {
       formError: (error as Error).message,
     };
   }
+
+  return {};
 }
