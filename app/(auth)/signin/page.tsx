@@ -1,4 +1,4 @@
-import { validateRequest } from '@/auth';
+import { validateRequest } from '@/lib/validateRequest';
 import { SigninForm } from './signin-form';
 import { redirect } from 'next/navigation';
 

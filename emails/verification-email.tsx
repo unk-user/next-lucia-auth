@@ -8,8 +8,9 @@ export default function VerificationEmail({ token }: { token: string }) {
       <Text>this is your token: {token}</Text>
       <Button
         href={
+          'http://' +
           (process.env.DOMAIN_NAME || 'localhost:3000') +
-          `api/verify-email?token=${token}`
+          `/api/verify-email?token=${token}`
         }
         style={{
           backgroundColor: 'black',
