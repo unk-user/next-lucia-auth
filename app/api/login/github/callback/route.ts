@@ -42,7 +42,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
     const githubUser: GithubUser = await githubUserResponse.json();
 
-    const existingAccount = await getAccountByGithubId(githubUser.id);
+    const existingAccount = await getAccountByGithubId(Number(githubUser.id));
 
     if (existingAccount) {
       const session = await lucia.createSession(existingAccount.userId, {});
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     } else {
       const user = await createUser(githubUser.email);
-      const account = await createAccountViaGithub(user.id, githubUser.id);
+      const account = await createAccountViaGithub(user.id, Number(githubUser.id));
       const session = await lucia.createSession(account.userId, {});
       const sessionCookie = lucia.createSessionCookie(session.id);
       cookies().set(

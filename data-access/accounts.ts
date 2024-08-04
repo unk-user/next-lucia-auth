@@ -1,5 +1,5 @@
 import prisma from '@/lib/db';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 export async function hashPassword(plainTextPassword: string, salt: string) {
   return new Promise<string>((resolve, reject) => {
@@ -30,7 +30,7 @@ export async function createAccount(userId: string, password: string) {
   });
 }
 
-export async function createAccountViaGithub(userId: string, githubId: string) {
+export async function createAccountViaGithub(userId: string, githubId: number) {
   return await prisma.account.create({
     data: {
       userId,
@@ -48,7 +48,7 @@ export async function getAccountByUserId(userId: string) {
   });
 }
 
-export async function getAccountByGithubId(githubId: string) {
+export async function getAccountByGithubId(githubId: number) {
   return await prisma.account.findUnique({
     where: {
       githubId,

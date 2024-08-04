@@ -86,7 +86,7 @@ export function SignupForm() {
       ) : (
         <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle>You're almost there!</CardTitle>
+            <CardTitle>You&apos;re almost there!</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription className="text-base">
