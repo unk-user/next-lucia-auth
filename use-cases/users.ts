@@ -1,24 +1,24 @@
 import { lucia } from '@/auth';
 import {
-  createAccount,
-  hashPassword,
-  updatePassword,
-} from '@/data-access/accounts';
-import {
   createEmailVerification,
   deleteEmailVerifications,
   deleteExpiredEmailVerifications,
   getLastEmailVerifications,
 } from '@/data-access/email-verification';
-import { createUser, getUserByEmail, verifyUser } from '@/data-access/users';
+import {
+  createUserWithPassword,
+  getUserByEmail,
+  hashPassword,
+  updatePassword,
+  verifyUser,
+} from '@/data-access/users';
 import { sendVerificationEmail } from '@/emails/verification-email';
 import jwt from 'jsonwebtoken';
 
 export async function registerUserUseCase(email: string, password: string) {
   const existingUser = await getUserByEmail(email);
   if (!existingUser) {
-    const user = await createUser(email);
-    await createAccount(user.id, password);
+    const user = await createUserWithPassword(email, password);
     const emailVerification = await createEmailVerification(user.id);
     sendVerificationEmail(email, emailVerification.token);
     console.log('verification token: ', emailVerification.token);
@@ -26,7 +26,7 @@ export async function registerUserUseCase(email: string, password: string) {
     return { user, emailVerification };
   }
 
-  if (existingUser.emailVerified) {
+  if (existingUser.emailVerified && existingUser.password) {
     throw new Error('User already exists');
   }
 
@@ -55,19 +55,19 @@ export async function registerUserUseCase(email: string, password: string) {
 
 export async function loginUserUseCase(email: string, password: string) {
   const user = await getUserByEmail(email);
-  if (!user || !user.emailVerified || !user.Account) {
+  if (!user || !user.emailVerified) {
     throw new Error('Account not found');
   }
-  if (user.Account?.accountType !== 'EMAIL') {
+  if (!user.password) {
     throw new Error('Invalid account type');
   }
 
   const hashedPassword = await hashPassword(
     password,
-    user.Account.salt as string
+    user.salt as string
   );
 
-  if (hashedPassword !== user.Account.password) {
+  if (hashedPassword !== user.password) {
     throw new Error('Wrong password');
   }
 

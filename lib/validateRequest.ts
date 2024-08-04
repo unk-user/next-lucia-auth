@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 
 export const uncachedValidateRequest = async (): Promise<
-  { user: User; session: Session } | { user: null; session: null }
+  { user: Partial<User>; session: Session } | { user: null; session: null }
 > => {
   const sessionId = cookies().get(lucia.sessionCookieName)?.value ?? null;
   if (!sessionId) {

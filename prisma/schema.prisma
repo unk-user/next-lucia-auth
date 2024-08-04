@@ -14,32 +14,17 @@ datasource db {
 }
 
 model User {
-  id                String              @id @default(cuid())
-  email             String              @unique
-  emailVerified     Boolean?
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified Boolean? @default(false)
+  password      String?
+  salt          String?
+  githubId      Int?     @unique
+
   EmailVerification EmailVerification[]
   Session           Session[]
-  Account           Account?
 
   @@map("users")
-}
-
-model Account {
-  id          String      @id @default(cuid())
-  userId      String      @unique
-  accountType accountType
-  githubId    Int?     @unique
-  password    String?
-  salt        String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("accounts")
-}
-
-enum accountType {
-  EMAIL
-  GITHUB
 }
 
 model EmailVerification {

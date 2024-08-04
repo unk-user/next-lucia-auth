@@ -3,10 +3,10 @@ import { cookies } from 'next/headers';
 import { OAuth2RequestError } from 'arctic';
 import { NextResponse, NextRequest } from 'next/server';
 import {
-  createAccountViaGithub,
-  getAccountByGithubId,
-} from '@/data-access/accounts';
-import { createUser, getUserByEmail } from '@/data-access/users';
+  createUserWithGithub,
+  getUserByEmail,
+  getUserByGithubId,
+} from '@/data-access/users';
 
 export interface GithubUser {
   id: string;
@@ -42,10 +42,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
     const githubUser: GithubUser = await githubUserResponse.json();
 
-    const existingAccount = await getAccountByGithubId(Number(githubUser.id));
+    const existingUser = await getUserByGithubId(Number(githubUser.id));
 
-    if (existingAccount) {
-      const session = await lucia.createSession(existingAccount.userId, {});
+    if (existingUser) {
+      const session = await lucia.createSession(existingUser.id, {});
       const sessionCookie = lucia.createSessionCookie(session.id);
       cookies().set(
         sessionCookie.name,
@@ -72,8 +72,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       )!.email;
     }
 
-    const existingUser = await getUserByEmail(githubUser.email);
-    if (existingUser) {
+    const emailUser = await getUserByEmail(githubUser.email);
+    if (emailUser) {
       return NextResponse.redirect(
         new URL(
           `/signin?formError=Account%20already%20signed%20up%20using%20email&email=${githubUser.email}`,
@@ -84,9 +84,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
       );
     } else {
-      const user = await createUser(githubUser.email);
-      const account = await createAccountViaGithub(user.id, Number(githubUser.id));
-      const session = await lucia.createSession(account.userId, {});
+      const user = await createUserWithGithub(githubUser.email, Number(githubUser.id));
+      const session = await lucia.createSession(user.id, {});
       const sessionCookie = lucia.createSessionCookie(session.id);
       cookies().set(
         sessionCookie.name,
